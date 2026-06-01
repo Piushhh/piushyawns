@@ -110,6 +110,9 @@ function App() {
               </a>
             </li>
           </ul>
+          <div className="bg-black text-white h-screen flex items-center justify-center">
+  <h1 className="text-4xl font-mono">Terminal Portfolio</h1>
+</div>
         </div>
       </section>
 
