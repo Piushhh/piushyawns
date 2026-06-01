@@ -14,9 +14,13 @@ export default function App() {
       <button
         type="button"
         aria-label="Open terminal"
-        className="absolute bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-black/60 p-3 shadow-lg shadow-black/40 backdrop-blur transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70" 
+        className="absolute bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-black/60 p-4 shadow-lg shadow-black/40 backdrop-blur transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70"
       >
-        <img src={terminalIcon} alt="" className="h-8 w-8" />
+        <img
+          src={terminalIcon}
+          alt=""
+          className="h-20 w-20 object-contain"
+        />
       </button>
     </main>
   )
