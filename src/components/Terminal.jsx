@@ -17,9 +17,13 @@ export default function Terminal({ onClose }) {
 						Close
 					</button>
 				</div>
-				<div className="px-5 py-6 font-mono text-sm text-emerald-200">
-					<p className="opacity-80">piush@macbook ~ %</p>
-					<p>Welcome to the terminal.</p>
+				<div className="px-5 py-6 font-mono text-sm text-emerald-200 space-y-1">
+					<p className="font-bold text-white text-base">Piush's Terminal</p>
+					<p>Welcome to Piush's terminal.</p>
+					<p className="opacity-60">type 'help' to start</p>
+					<p className="opacity-80 pt-3">
+						piush@macbook ~ % <span className="inline-block h-4 w-1.5 translate-y-0.5 bg-emerald-400 animate-pulse" />
+					</p>
 				</div>
 			</div>
 		</div>
