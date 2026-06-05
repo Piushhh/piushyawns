@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import TwinklingHero from './components/TwinklingHero'
 import Terminal from './components/Terminal'
 import heroImg from './assets/hero2.jpeg'
 import terminalIcon from './assets/terminal.png'
@@ -10,11 +9,10 @@ export default function App() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       
-      {/* Background ASCII Canvas */}
+      {/* Static Background Image */}
       <section className="absolute inset-0 z-0 h-full w-full">
-        <TwinklingHero imageUrl={heroImg} />
+        <img src={heroImg} alt="Background" className="h-full w-full object-cover" />
       </section>
-
       {/* Floating Action Button to toggle Terminal */}
       {!isTerminalOpen && (
         <button
