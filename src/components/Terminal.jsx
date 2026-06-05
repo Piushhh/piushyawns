@@ -1,39 +1,38 @@
 import { useState, useRef, useEffect } from 'react'
 
+const RetroMacIcon = () => (
+	<svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
+		<g transform="translate(10, 10)">
+			{/* Base mac body with dithering/shading simulation using a pattern */}
+			<defs>
+				<pattern id="dither" patternUnits="userSpaceOnUse" width="4" height="4">
+					<rect width="2" height="2" fill="#000" fillOpacity="0.3" />
+					<rect x="2" y="2" width="2" height="2" fill="#000" fillOpacity="0.3" />
+				</pattern>
+			</defs>
+			<rect x="0" y="0" width="70" height="60" fill="url(#dither)" stroke="#000" strokeWidth="2" />
+			<rect x="8" y="8" width="54" height="38" fill="#fff" stroke="#000" strokeWidth="2" />
+			{/* Face line */}
+			<path d="M 35 8 L 35 46" stroke="#000" strokeWidth="2" />
+			{/* Eyes */}
+			<rect x="22" y="18" width="4" height="6" fill="#000" />
+			<rect x="46" y="18" width="4" height="6" fill="#000" />
+			{/* Smile */}
+			<path d="M 22 35 Q 35 42 46 35" stroke="#000" strokeWidth="2" fill="none" />
+			{/* Nose */}
+			<path d="M 35 25 L 30 30" stroke="#000" strokeWidth="2" fill="none" />
+		</g>
+	</svg>
+)
+
 export default function Terminal({ onClose }) {
 	const [input, setInput] = useState('')
 	const [history, setHistory] = useState([])
-	const [isLoading, setIsLoading] = useState(true)
-	const [loadingText, setLoadingText] = useState('')
+	const [isLoading, setIsLoading] = useState(false)
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
 
-	// Boot sequence effect
-	useEffect(() => {
-		const bootSequence = [
-			"Initializing PiushOS kernel...",
-			"Loading drivers...",
-			"[OK] File system mounted.",
-			"[OK] Network connected.",
-			"Starting CLI interface...",
-			"Access granted."
-		]
-		
-		let step = 0
-		const interval = setInterval(() => {
-			if (step < bootSequence.length) {
-				setLoadingText(prev => prev + (prev ? '\n' : '') + bootSequence[step])
-				step++
-			} else {
-				clearInterval(interval)
-				setTimeout(() => setIsLoading(false), 300)
-			}
-		}, 150)
-
-		return () => clearInterval(interval)
-	}, [])
-
-	// Focus the input when the terminal is opened (and finished loading)
+	// Focus the input when the terminal is opened
 	useEffect(() => {
 		if (!isLoading) {
 			inputRef.current?.focus()
@@ -45,7 +44,7 @@ export default function Terminal({ onClose }) {
 		if (!isLoading) {
 			terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 		}
-	}, [history, isLoading, loadingText])
+	}, [history, isLoading])
 
 	const handleTerminalClick = () => {
 		inputRef.current?.focus()
@@ -69,75 +68,59 @@ export default function Terminal({ onClose }) {
 		switch (cleanInput) {
 			case 'help':
 				output = (
-					<div className="my-2 border border-emerald-500/30 bg-emerald-950/20 rounded-xl p-4 max-w-lg space-y-2 shadow-inner">
-						<div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
-							<span className="text-white font-semibold flex items-center gap-1.5">
-								<span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-								Command: <span className="text-emerald-300 font-mono">help</span>
-							</span>
-							<span className="text-xs text-emerald-400/60 font-mono">Status: active</span>
-						</div>
-						<div className="text-xs text-emerald-300/80 space-y-1 pt-1">
-							<p className="font-semibold text-white">Total Commands Available: 6</p>
-							<div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2 font-mono text-emerald-400">
-								<div>• <span className="text-white font-bold">help</span> - Show this help menu</div>
-								<div>• <span className="text-white font-bold">about</span> - Who is Piush?</div>
-								<div>• <span className="text-white font-bold">projects</span> - Showcase of works</div>
-								<div>• <span className="text-white font-bold">skills</span> - Technology stack</div>
-								<div>• <span className="text-white font-bold">contact</span> - Reach out to me</div>
-								<div>• <span className="text-white font-bold">clear</span> - Clear output log</div>
-							</div>
-						</div>
+					<div className="my-4 text-[#1c1c1c]">
+						<pre className="font-mono text-sm leading-tight">
+{`┌─[ PIUSHOS / HELP ]────────┐
+| Command: help             |
+| Items: 7                  |
+└───────────────────────────┘
+
+Command index for PiushOS.
+7 commands available.
+____________________________________________________
+
+COMMAND           | DESCRIPTION
+───────────────── | ────────────────────────────────────────
+help              | Show available commands
+piushos           | About PiushOS
+bio               | Biography
+works             | Works
+hobbies           | Hobbies
+contact           | Contact
+clear             | Clear terminal`}
+						</pre>
 					</div>
 				)
 				break
-			case 'about':
+			case 'piushos':
+				output = <div className="my-2">PiushOS is a retro-styled interactive terminal interface.</div>
+				break
+			case 'bio':
+				output = <div className="my-2">Just a passionate developer crafting digital experiences.</div>
+				break
+			case 'works':
 				output = (
-					<div className="my-2 text-emerald-300/90 space-y-2 max-w-xl">
-						<p className="text-white font-bold">About Piush</p>
-						<p>Hey there! I am Piush, a passionate full-stack developer who loves creating interactive, modern, and beautiful web experiences.</p>
-						<p>I enjoy merging design aesthetics with robust engineering to build web apps that leave a lasting impression.</p>
+					<div className="my-2">
+						1. PiushOS Style CLI Portfolio<br/>
+						2. Creative Canvas Animation<br/>
 					</div>
 				)
 				break
-			case 'projects':
-				output = (
-					<div className="my-2 text-emerald-300/90 space-y-2 max-w-xl">
-						<p className="text-white font-bold">Projects</p>
-						<ul className="list-disc pl-4 space-y-1">
-							<li>
-								<span className="text-white font-semibold">DaveOS Style CLI Portfolio</span> - An interactive terminal website powered by React and Tailwind CSS.
-							</li>
-							<li>
-								<span className="text-white font-semibold">Creative Canvas Animation</span> - An optimized 2D/3D canvas processing engine for real-time visual conversions.
-							</li>
-						</ul>
-					</div>
-				)
-				break
-			case 'skills':
-				output = (
-					<div className="my-2 text-emerald-300/90 space-y-2">
-						<p className="text-white font-bold">Skills</p>
-						<p><span className="text-emerald-400">Frontend:</span> React, JavaScript (ES6+), Tailwind CSS, HTML5, CSS3, Vite</p>
-						<p><span className="text-emerald-400">Backend:</span> Node.js, Express, REST APIs</p>
-						<p><span className="text-emerald-400">Developer Tools:</span> Git, GitHub, VS Code, Vite, PostCSS</p>
-					</div>
-				)
+			case 'hobbies':
+				output = <div className="my-2">Coding, Designing, and drinking coffee.</div>
 				break
 			case 'contact':
 				output = (
-					<div className="my-2 text-emerald-300/90 space-y-1">
-						<p className="text-white font-bold">Get In Touch</p>
-						<p>• <span className="text-emerald-400">Email:</span> <a href="mailto:piush@example.com" className="underline hover:text-white transition">piush@example.com</a></p>
-						<p>• <span className="text-emerald-400">GitHub:</span> <a href="https://github.com/Piushhh" target="_blank" rel="noreferrer" className="underline hover:text-white transition">github.com/Piushhh</a></p>
+					<div className="my-2">
+						Email: piush@example.com<br/>
+						GitHub: github.com/Piushhh
 					</div>
 				)
 				break
 			default:
 				output = (
-					<div className="my-1 text-red-400 font-mono">
-						sh: command not found: {trimmedInput}. Type <span className="text-white font-bold">help</span> to view available commands.
+					<div className="my-1">
+						sh: command not found: {trimmedInput}. Type 'help' to view available commands.
 					</div>
 				)
 				break
@@ -148,48 +131,58 @@ export default function Terminal({ onClose }) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/70 p-4 backdrop-blur">
-			<div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b] shadow-2xl shadow-black/60">
-				<div className="flex items-center justify-between border-b border-white/10 bg-[#111] px-4 py-3">
-					<div className="flex items-center gap-2">
-						<span className="h-3 w-3 rounded-full bg-red-500" />
-						<span className="h-3 w-3 rounded-full bg-yellow-400" />
-						<span className="h-3 w-3 rounded-full bg-green-500" />
+		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+			<div className="w-full max-w-4xl overflow-hidden rounded-t-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5]">
+				
+				{/* Classic Mac OS Title bar */}
+				<div className="flex items-center justify-center relative border-b border-[#a0a0a0] bg-gradient-to-b from-[#f8f8f8] to-[#d4d4d4] px-4 py-1.5">
+					<div className="absolute left-4 flex items-center gap-2">
+						{/* Traffic lights */}
+						<button 
+							onClick={onClose} 
+							className="h-3.5 w-3.5 rounded-full border border-[#d6413b] bg-[#ff5f56] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] active:bg-[#d6413b]" 
+							aria-label="Close terminal"
+						/>
+						<button className="h-3.5 w-3.5 rounded-full border border-[#d2a32c] bg-[#ffbd2e] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)]" />
+						<button className="h-3.5 w-3.5 rounded-full border border-[#239c32] bg-[#27c93f] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)]" />
 					</div>
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-md px-2 py-1 text-xs font-semibold text-white/70 transition hover:text-white"
-						aria-label="Close terminal"
-					>
-						Close
-					</button>
+					<span className="text-[14px] font-semibold text-[#333] tracking-wide" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+						PiushOS Terminal
+					</span>
 				</div>
 				
+				{/* Content Area with scanlines */}
 				<div 
 					onClick={handleTerminalClick}
-					className="px-5 py-6 font-mono text-sm text-emerald-200 overflow-y-auto max-h-[60vh] h-[60vh] space-y-2 cursor-text"
+					className="px-6 py-8 font-mono text-[15px] text-[#1c1c1c] overflow-y-auto h-[65vh] cursor-text"
+					style={{
+						backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px)',
+						backgroundColor: '#f8f9fa'
+					}}
 				>
 					{isLoading ? (
-						<div className="whitespace-pre-line text-emerald-400 font-mono">
-							{loadingText}
-							<span className="inline-block h-4 w-2 bg-emerald-400 animate-pulse align-middle ml-1" />
-							<div ref={terminalEndRef} />
+						<div className="whitespace-pre-line text-[#1c1c1c]">
+							Booting PiushOS...
 						</div>
 					) : (
-						<>
-							<div className="space-y-1 animate-fade-in">
-								<p className="font-bold text-white text-base">Piush's Terminal</p>
-								<p>Welcome to Piush's terminal.</p>
-								<p className="opacity-60">type 'help' to start</p>
+						<div className="animate-fade-in max-w-3xl">
+							
+							{/* Header */}
+							<RetroMacIcon />
+							<div className="border-b border-[#1c1c1c] pb-1 mb-4 inline-block pr-10">
+								<h1 className="font-bold text-xl">PiushOS Terminal</h1>
+							</div>
+							<div className="space-y-3 mb-6">
+								<p>Welcome to PiushOS terminal.</p>
+								<p>Type 'help' to start.</p>
 							</div>
 
 							{/* Command history */}
-							<div className="space-y-3 pt-2">
+							<div className="space-y-4">
 								{history.map((entry, idx) => (
 									<div key={idx} className="space-y-1">
-										<p className="opacity-85">
-											piush@macbook ~ % <span className="text-white">{entry.command}</span>
+										<p>
+											$ {entry.command}
 										</p>
 										<div>{entry.output}</div>
 									</div>
@@ -197,24 +190,23 @@ export default function Terminal({ onClose }) {
 							</div>
 
 							{/* Current Input prompt */}
-							<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-2">
-								<span className="opacity-85 shrink-0">piush@macbook ~ %</span>
+							<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-4">
+								<span className="shrink-0">$</span>
 								<div className="relative flex-grow flex items-center">
 									<input
 										ref={inputRef}
 										type="text"
 										value={input}
 										onChange={(e) => setInput(e.target.value)}
-										className="w-full bg-transparent text-emerald-200 focus:outline-none border-none p-0 font-mono caret-emerald-400 select-text"
+										className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
 										aria-label="Terminal input"
+										spellCheck="false"
+										autoComplete="off"
 									/>
-									{input.length === 0 && (
-										<span className="absolute left-0 pointer-events-none inline-block h-4 w-1.5 bg-emerald-400 animate-pulse" />
-									)}
 								</div>
 							</form>
-							<div ref={terminalEndRef} />
-						</>
+							<div ref={terminalEndRef} className="h-4" />
+						</div>
 					)}
 				</div>
 			</div>
