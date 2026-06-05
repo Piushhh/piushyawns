@@ -3,18 +3,49 @@ import { useState, useRef, useEffect } from 'react'
 export default function Terminal({ onClose }) {
 	const [input, setInput] = useState('')
 	const [history, setHistory] = useState([])
+	const [isLoading, setIsLoading] = useState(true)
+	const [loadingText, setLoadingText] = useState('')
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
 
-	// Focus the input when the terminal is opened
+	// Boot sequence effect
 	useEffect(() => {
-		inputRef.current?.focus()
+		const bootSequence = [
+			"Initializing PiushOS kernel...",
+			"Loading drivers...",
+			"[OK] File system mounted.",
+			"[OK] Network connected.",
+			"Starting CLI interface...",
+			"Access granted."
+		]
+		
+		let step = 0
+		const interval = setInterval(() => {
+			if (step < bootSequence.length) {
+				setLoadingText(prev => prev + (prev ? '\n' : '') + bootSequence[step])
+				step++
+			} else {
+				clearInterval(interval)
+				setTimeout(() => setIsLoading(false), 300)
+			}
+		}, 150)
+
+		return () => clearInterval(interval)
 	}, [])
+
+	// Focus the input when the terminal is opened (and finished loading)
+	useEffect(() => {
+		if (!isLoading) {
+			inputRef.current?.focus()
+		}
+	}, [isLoading])
 
 	// Keep terminal scrolled to the bottom as history grows
 	useEffect(() => {
-		terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-	}, [history])
+		if (!isLoading) {
+			terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+		}
+	}, [history, isLoading, loadingText])
 
 	const handleTerminalClick = () => {
 		inputRef.current?.focus()
@@ -137,44 +168,54 @@ export default function Terminal({ onClose }) {
 				
 				<div 
 					onClick={handleTerminalClick}
-					className="px-5 py-6 font-mono text-sm text-emerald-200 overflow-y-auto max-h-[60vh] space-y-2 cursor-text"
+					className="px-5 py-6 font-mono text-sm text-emerald-200 overflow-y-auto max-h-[60vh] h-[60vh] space-y-2 cursor-text"
 				>
-					<div className="space-y-1">
-						<p className="font-bold text-white text-base">Piush's Terminal</p>
-						<p>Welcome to Piush's terminal.</p>
-						<p className="opacity-60">type 'help' to start</p>
-					</div>
-
-					{/* Command history */}
-					<div className="space-y-3 pt-2">
-						{history.map((entry, idx) => (
-							<div key={idx} className="space-y-1">
-								<p className="opacity-85">
-									piush@macbook ~ % <span className="text-white">{entry.command}</span>
-								</p>
-								<div>{entry.output}</div>
-							</div>
-						))}
-					</div>
-
-					{/* Current Input prompt */}
-					<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-2">
-						<span className="opacity-85 shrink-0">piush@macbook ~ %</span>
-						<div className="relative flex-grow flex items-center">
-							<input
-								ref={inputRef}
-								type="text"
-								value={input}
-								onChange={(e) => setInput(e.target.value)}
-								className="w-full bg-transparent text-emerald-200 focus:outline-none border-none p-0 font-mono caret-emerald-400 select-text"
-								aria-label="Terminal input"
-							/>
-							{input.length === 0 && (
-								<span className="absolute left-0 pointer-events-none inline-block h-4 w-1.5 bg-emerald-400 animate-pulse" />
-							)}
+					{isLoading ? (
+						<div className="whitespace-pre-line text-emerald-400 font-mono">
+							{loadingText}
+							<span className="inline-block h-4 w-2 bg-emerald-400 animate-pulse align-middle ml-1" />
+							<div ref={terminalEndRef} />
 						</div>
-					</form>
-					<div ref={terminalEndRef} />
+					) : (
+						<>
+							<div className="space-y-1 animate-fade-in">
+								<p className="font-bold text-white text-base">Piush's Terminal</p>
+								<p>Welcome to Piush's terminal.</p>
+								<p className="opacity-60">type 'help' to start</p>
+							</div>
+
+							{/* Command history */}
+							<div className="space-y-3 pt-2">
+								{history.map((entry, idx) => (
+									<div key={idx} className="space-y-1">
+										<p className="opacity-85">
+											piush@macbook ~ % <span className="text-white">{entry.command}</span>
+										</p>
+										<div>{entry.output}</div>
+									</div>
+								))}
+							</div>
+
+							{/* Current Input prompt */}
+							<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-2">
+								<span className="opacity-85 shrink-0">piush@macbook ~ %</span>
+								<div className="relative flex-grow flex items-center">
+									<input
+										ref={inputRef}
+										type="text"
+										value={input}
+										onChange={(e) => setInput(e.target.value)}
+										className="w-full bg-transparent text-emerald-200 focus:outline-none border-none p-0 font-mono caret-emerald-400 select-text"
+										aria-label="Terminal input"
+									/>
+									{input.length === 0 && (
+										<span className="absolute left-0 pointer-events-none inline-block h-4 w-1.5 bg-emerald-400 animate-pulse" />
+									)}
+								</div>
+							</form>
+							<div ref={terminalEndRef} />
+						</>
+					)}
 				</div>
 			</div>
 		</div>
