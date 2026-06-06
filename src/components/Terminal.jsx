@@ -93,10 +93,7 @@ clear             | Clear terminal`}
 				)
 				break
 			case 'piushos':
-				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He has a strong interest in blockchain backend development and modern UI design.</div>
-				break
-			case 'bio':
-				output = <div className="my-2">Just a passionate developer crafting digital experiences.</div>
+				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He has a strong interest in Blockchain systems, Backend Development and Modern UI design.</div>
 				break
 			case 'works':
 				output = (
