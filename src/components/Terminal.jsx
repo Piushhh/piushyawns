@@ -355,6 +355,122 @@ clear             | Clear terminal`}
 					</div>
 				)
 				break
+
+			// ── Easter Egg Commands (hidden from help) ──
+
+			case 'sudo':
+				output = (
+					<div className="my-2">
+						<span className="text-red-600 font-bold">[sudo]</span> piush is not in the sudoers file. This incident will be reported. 🚨
+					</div>
+				)
+				break
+
+			case 'matrix':
+				output = (
+					<div className="my-3 font-mono text-[11px] leading-none text-green-600 overflow-hidden whitespace-pre" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+{`
+ ╔══════════════════════════════════════════════╗
+ ║  Wake up, Neo...                            ║
+ ║  The Matrix has you...                      ║
+ ║  Follow the white rabbit. 🐇               ║
+ ╚══════════════════════════════════════════════╝
+
+ 01001000 01100101 01101100 01101100 01101111
+ ░▒▓█ ▓▒░ █▓▒░ ░▒▓█ ▓▒░ █▓▒░ ░▒▓█ ▓▒░ █▓▒░
+ There is no spoon. 🥄`}
+					</div>
+				)
+				break
+
+			case 'gui':
+				output = (
+					<div className="my-2">
+						<pre className="font-mono text-sm leading-tight">
+{`┌─────────────────────────────────┐
+│  ERROR: gui module not found    │
+│                                 │
+│  Real developers use the CLI.   │
+│  This is the way. ⌨️            │
+└─────────────────────────────────┘`}
+						</pre>
+					</div>
+				)
+				break
+
+			case 'date':
+				output = (
+					<div className="my-2">
+						{new Date().toLocaleString('en-US', {
+							weekday: 'long',
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+							hour: '2-digit',
+							minute: '2-digit',
+							second: '2-digit',
+							timeZoneName: 'short'
+						})}
+					</div>
+				)
+				break
+
+			case '42':
+				output = (
+					<div className="my-2">
+						The Answer to the Ultimate Question of Life, the Universe, and Everything. 🌌
+					</div>
+				)
+				break
+
+			case 'coffee':
+				output = (
+					<div className="my-3 font-mono text-[12px] leading-tight whitespace-pre">
+{`
+        ( (
+         ) )
+      ._______.
+      |       |]
+      \\       /
+       \`-----'
+
+  Brewing coffee... ☕
+  [██████████████] 100%
+  Here you go! Cream or sugar?`}
+					</div>
+				)
+				break
+
+			case 'rm -rf /':
+			case 'rm -rf':
+				output = (
+					<div className="my-2 space-y-1">
+						<div className="text-red-600 font-bold">⚠️  CRITICAL WARNING ⚠️</div>
+						<div>Deleting system files...</div>
+						<div>Removing /sys/piush/core.bin... <span className="text-red-600">FAILED</span></div>
+						<div>Removing /usr/bin/humor... <span className="text-red-600">FAILED</span></div>
+						<div>Removing /etc/good-vibes... <span className="text-red-600">PERMISSION DENIED</span></div>
+						<div className="pt-1 font-bold">Nice try. 😏 PiushOS is indestructible.</div>
+					</div>
+				)
+				break
+
+			case 'whoami':
+				output = (
+					<div className="my-2">
+						visitor@piushos — You're a curious one, aren't you? 👀
+					</div>
+				)
+				break
+
+			case 'exit':
+				output = (
+					<div className="my-2">
+						There is no escape. You're stuck here forever. Just kidding — click the red button. 🔴
+					</div>
+				)
+				break
+
 			default:
 				output = (
 					<div className="my-1">
