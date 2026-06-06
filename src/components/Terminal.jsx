@@ -34,6 +34,19 @@ export default function Terminal({ onClose }) {
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
 	const bootEndRef = useRef(null)
+	const audioCtxRef = useRef(null)
+
+	// Lazily get or create a shared AudioContext
+	const getAudioCtx = () => {
+		if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+			audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
+		}
+		// Resume if suspended (browser autoplay policy)
+		if (audioCtxRef.current.state === 'suspended') {
+			audioCtxRef.current.resume()
+		}
+		return audioCtxRef.current
+	}
 
 	const BOOT_SEQUENCE = [
 		{ text: 'PiushOS v2.1.0 — Starting...', delay: 100 },
@@ -165,6 +178,89 @@ export default function Terminal({ onClose }) {
 	useEffect(() => {
 		bootEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [bootLines, currentBootText])
+
+	// Mechanical keyboard click sound
+	const playKeyClick = () => {
+		try {
+			const ctx = getAudioCtx()
+			const now = ctx.currentTime
+
+			// Short noise burst for the click
+			const bufferSize = ctx.sampleRate * 0.015 // 15ms
+			const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+			const data = buffer.getChannelData(0)
+			for (let i = 0; i < bufferSize; i++) {
+				data[i] = (Math.random() * 2 - 1) * 0.15
+			}
+
+			const noise = ctx.createBufferSource()
+			noise.buffer = buffer
+
+			// Bandpass filter to shape the click tone
+			const filter = ctx.createBiquadFilter()
+			filter.type = 'bandpass'
+			filter.frequency.value = 3000 + Math.random() * 2000 // randomize pitch slightly
+			filter.Q.value = 1.5
+
+			const gain = ctx.createGain()
+			gain.gain.setValueAtTime(0.08 + Math.random() * 0.04, now) // subtle volume variation
+			gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012)
+
+			noise.connect(filter)
+			filter.connect(gain)
+			gain.connect(ctx.destination)
+
+			noise.start(now)
+			noise.stop(now + 0.015)
+		} catch { /* audio not available */ }
+	}
+
+	// Enter / carriage return sound (deeper, slightly longer)
+	const playEnterSound = () => {
+		try {
+			const ctx = getAudioCtx()
+			const now = ctx.currentTime
+
+			// Slightly longer noise burst
+			const bufferSize = ctx.sampleRate * 0.04 // 40ms
+			const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+			const data = buffer.getChannelData(0)
+			for (let i = 0; i < bufferSize; i++) {
+				data[i] = (Math.random() * 2 - 1) * 0.2
+			}
+
+			const noise = ctx.createBufferSource()
+			noise.buffer = buffer
+
+			// Lower frequency for a heavier "thunk"
+			const filter = ctx.createBiquadFilter()
+			filter.type = 'bandpass'
+			filter.frequency.value = 1200
+			filter.Q.value = 0.8
+
+			const gain = ctx.createGain()
+			gain.gain.setValueAtTime(0.12, now)
+			gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035)
+
+			noise.connect(filter)
+			filter.connect(gain)
+			gain.connect(ctx.destination)
+
+			noise.start(now)
+			noise.stop(now + 0.04)
+		} catch { /* audio not available */ }
+	}
+
+	const handleInputChange = (e) => {
+		setInput(e.target.value)
+		playKeyClick()
+	}
+
+	const handleKeyDown = (e) => {
+		if (e.key === 'Enter') {
+			playEnterSound()
+		}
+	}
 
 	const handleTerminalClick = () => {
 		inputRef.current?.focus()
@@ -365,7 +461,8 @@ clear             | Clear terminal`}
 											ref={inputRef}
 											type="text"
 											value={input}
-											onChange={(e) => setInput(e.target.value)}
+											onChange={handleInputChange}
+											onKeyDown={handleKeyDown}
 											className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
 											aria-label="Terminal input"
 											spellCheck="false"
