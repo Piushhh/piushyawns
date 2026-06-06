@@ -96,8 +96,7 @@ clear             | Clear terminal`}
 			case 'works':
 				output = (
 					<div className="my-2">
-						1. PiushOS Style CLI Portfolio<br/>
-						2. Creative Canvas Animation<br/>
+						"CollegeSpace" coming soon...
 					</div>
 				)
 				break
