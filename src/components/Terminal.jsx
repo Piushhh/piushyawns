@@ -123,7 +123,11 @@ clear             | Clear terminal`}
 
 	return (
 		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
-			<div className="w-full max-w-4xl overflow-hidden rounded-t-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5]">
+			{/* CRT Power-on animation wrapper */}
+			<div className="w-full max-w-4xl crt-power-on">
+				<div className="relative overflow-hidden rounded-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5] crt-flicker"
+					style={{ borderRadius: '8px' }}
+				>
 				
 				{/* Classic Mac OS Title bar */}
 				<div className="flex items-center justify-center relative border-b border-[#a0a0a0] bg-gradient-to-b from-[#f8f8f8] to-[#d4d4d4] px-4 py-1.5">
@@ -142,63 +146,89 @@ clear             | Clear terminal`}
 					</span>
 				</div>
 				
-				{/* Content Area with scanlines */}
-				<div 
-					onClick={handleTerminalClick}
-					className="px-6 py-8 font-mono text-[15px] text-[#1c1c1c] overflow-y-auto h-[65vh] cursor-text"
-					style={{
-						backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px)',
-						backgroundColor: '#f8f9fa'
-					}}
-				>
-					{isLoading ? (
-						<div className="whitespace-pre-line text-[#1c1c1c]">
-							Booting PiushOS...
-						</div>
-					) : (
-						<div className="animate-fade-in max-w-3xl">
-							
-							{/* Header */}
-							<RetroMacIcon />
-							<div className="border-b border-[#1c1c1c] pb-1 mb-4 inline-block pr-10">
-								<h1 className="font-bold text-xl">PiushOS Terminal</h1>
-							</div>
-							<div className="space-y-3 mb-6">
-								<p>Welcome to PiushOS terminal.</p>
-								<p>Type 'help' to start.</p>
-							</div>
+				{/* Content Area with CRT effects */}
+				<div className="relative">
+					{/* Animated scanline sweep */}
+					<div
+						className="pointer-events-none absolute inset-0 z-10"
+						style={{
+							background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.04) 50%, transparent 100%)',
+							height: '30%',
+							animation: 'crt-scanline 6s linear infinite',
+						}}
+					/>
 
-							{/* Command history */}
-							<div className="space-y-4">
-								{history.map((entry, idx) => (
-									<div key={idx} className="space-y-1">
-										<p>
-											$ {entry.command}
-										</p>
-										<div>{entry.output}</div>
-									</div>
-								))}
-							</div>
+					{/* Static scanline texture */}
+					<div
+						className="pointer-events-none absolute inset-0 z-10"
+						style={{
+							backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px)',
+						}}
+					/>
 
-							{/* Current Input prompt */}
-							<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-4">
-								<span className="shrink-0">$</span>
-								<div className="relative flex-grow flex items-center">
-									<input
-										ref={inputRef}
-										type="text"
-										value={input}
-										onChange={(e) => setInput(e.target.value)}
-										className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
-										aria-label="Terminal input"
-										spellCheck="false"
-										autoComplete="off"
-									/>
+					{/* Vignette overlay — darkens the corners */}
+					<div
+						className="pointer-events-none absolute inset-0 z-10"
+						style={{
+							background: 'radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.12) 100%)',
+						}}
+					/>
+
+					<div 
+						onClick={handleTerminalClick}
+						className="px-6 py-8 font-mono text-[15px] text-[#1c1c1c] overflow-y-auto h-[65vh] cursor-text crt-text-glow"
+						style={{ backgroundColor: '#f8f9fa' }}
+					>
+						{isLoading ? (
+							<div className="whitespace-pre-line text-[#1c1c1c]">
+								Booting PiushOS...
+							</div>
+						) : (
+							<div className="animate-fade-in max-w-3xl">
+								
+								{/* Header */}
+								<RetroMacIcon />
+								<div className="border-b border-[#1c1c1c] pb-1 mb-4 inline-block pr-10">
+									<h1 className="font-bold text-xl">PiushOS Terminal</h1>
 								</div>
-							</form>
-							<div ref={terminalEndRef} className="h-4" />
-						</div>
-					)}
+								<div className="space-y-3 mb-6">
+									<p>Welcome to PiushOS terminal.</p>
+									<p>Type 'help' to start.</p>
+								</div>
+
+								{/* Command history */}
+								<div className="space-y-4">
+									{history.map((entry, idx) => (
+										<div key={idx} className="space-y-1">
+											<p>
+												$ {entry.command}
+											</p>
+											<div>{entry.output}</div>
+										</div>
+									))}
+								</div>
+
+								{/* Current Input prompt */}
+								<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-4">
+									<span className="shrink-0">$</span>
+									<div className="relative flex-grow flex items-center">
+										<input
+											ref={inputRef}
+											type="text"
+											value={input}
+											onChange={(e) => setInput(e.target.value)}
+											className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
+											aria-label="Terminal input"
+											spellCheck="false"
+											autoComplete="off"
+										/>
+									</div>
+								</form>
+								<div ref={terminalEndRef} className="h-4" />
+							</div>
+						)}
+					</div>
+				</div>
 				</div>
 			</div>
 		</div>
