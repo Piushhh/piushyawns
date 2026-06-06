@@ -36,6 +36,11 @@ export default function Terminal({ onClose }) {
 	const bootEndRef = useRef(null)
 	const audioCtxRef = useRef(null)
 
+	// Drag state for the window
+	const [windowPos, setWindowPos] = useState({ x: 0, y: 0 })
+	const [isDraggingWindow, setIsDraggingWindow] = useState(false)
+	const dragStartRef = useRef({ x: 0, y: 0 })
+
 	// Lazily get or create a shared AudioContext
 	const getAudioCtx = () => {
 		if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
@@ -266,6 +271,32 @@ export default function Terminal({ onClose }) {
 		inputRef.current?.focus()
 	}
 
+	// ── Window drag handlers (title bar only) ──
+	const handleTitleBarPointerDown = (e) => {
+		// Don't start drag if clicking on traffic light buttons
+		if (e.target.closest('button')) return
+		e.currentTarget.setPointerCapture(e.pointerId)
+		setIsDraggingWindow(true)
+		dragStartRef.current = {
+			x: e.clientX - windowPos.x,
+			y: e.clientY - windowPos.y,
+		}
+	}
+
+	const handleTitleBarPointerMove = (e) => {
+		if (!isDraggingWindow) return
+		setWindowPos({
+			x: e.clientX - dragStartRef.current.x,
+			y: e.clientY - dragStartRef.current.y,
+		})
+	}
+
+	const handleTitleBarPointerUp = (e) => {
+		if (!isDraggingWindow) return
+		e.currentTarget.releasePointerCapture(e.pointerId)
+		setIsDraggingWindow(false)
+	}
+
 	const handleSubmit = (e) => {
 		e.preventDefault()
 		const trimmedInput = input.trim()
@@ -307,7 +338,7 @@ clear             | Clear terminal`}
 				)
 				break
 			case 'piushos':
-				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He has a strong interest in Blockchain systems, Backend Development and Modern UI design.</div>
+				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He is keenly interested in Blockchain, Backend Development and Modern UI design.</div>
 				break
 			case 'works':
 				output = (
@@ -340,24 +371,36 @@ clear             | Clear terminal`}
 	return (
 		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
 			{/* CRT Power-on animation wrapper */}
-			<div className="w-full max-w-4xl crt-power-on">
+			<div
+				className="w-full max-w-4xl crt-power-on"
+				style={{
+					transform: `translate(${windowPos.x}px, ${windowPos.y}px)`,
+					transition: isDraggingWindow ? 'none' : 'transform 0.15s ease-out',
+				}}
+			>
 				<div className="relative overflow-hidden rounded-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5] crt-flicker"
 					style={{ borderRadius: '8px' }}
 				>
 				
-				{/* Classic Mac OS Title bar */}
-				<div className="flex items-center justify-center relative border-b border-[#a0a0a0] bg-gradient-to-b from-[#f8f8f8] to-[#d4d4d4] px-4 py-1.5">
+				{/* Classic Mac OS Title bar — draggable */}
+				<div
+					className={`flex items-center justify-center relative border-b border-[#a0a0a0] bg-gradient-to-b from-[#f8f8f8] to-[#d4d4d4] px-4 py-1.5 select-none ${isDraggingWindow ? 'cursor-grabbing' : 'cursor-grab'}`}
+					onPointerDown={handleTitleBarPointerDown}
+					onPointerMove={handleTitleBarPointerMove}
+					onPointerUp={handleTitleBarPointerUp}
+					style={{ touchAction: 'none' }}
+				>
 					<div className="absolute left-4 flex items-center gap-2">
 						{/* Traffic lights */}
 						<button 
 							onClick={onClose} 
-							className="h-3.5 w-3.5 rounded-full border border-[#d6413b] bg-[#ff5f56] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] active:bg-[#d6413b]" 
+							className="h-3.5 w-3.5 rounded-full border border-[#d6413b] bg-[#ff5f56] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] active:bg-[#d6413b] cursor-pointer" 
 							aria-label="Close terminal"
 						/>
-						<button className="h-3.5 w-3.5 rounded-full border border-[#d2a32c] bg-[#ffbd2e] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)]" />
-						<button className="h-3.5 w-3.5 rounded-full border border-[#239c32] bg-[#27c93f] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)]" />
+						<button className="h-3.5 w-3.5 rounded-full border border-[#d2a32c] bg-[#ffbd2e] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] cursor-default" />
+						<button className="h-3.5 w-3.5 rounded-full border border-[#239c32] bg-[#27c93f] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] cursor-default" />
 					</div>
-					<span className="text-[14px] font-semibold text-[#333] tracking-wide" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+					<span className="text-[14px] font-semibold text-[#333] tracking-wide pointer-events-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 						PiushOS Terminal
 					</span>
 				</div>
