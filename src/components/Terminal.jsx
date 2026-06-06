@@ -25,12 +25,77 @@ const RetroMacIcon = () => (
 	</svg>
 )
 
+// ── Theme Definitions ──
+const THEMES = {
+	mac: {
+		name: 'Mac Classic',
+		bg: '#f8f9fa',
+		text: '#1c1c1c',
+		textMuted: '#444',
+		titleBarFrom: '#f8f8f8',
+		titleBarTo: '#d4d4d4',
+		titleText: '#333',
+		border: '#a0a0a0',
+		cardBg: '#f4f5f5',
+		prompt: '#1c1c1c',
+		cursor: '#1c1c1c',
+		bootOk: '#15803d',
+		bootProgress: '#2563eb',
+	},
+	hacker: {
+		name: 'Hacker',
+		bg: '#0a0a0a',
+		text: '#00ff41',
+		textMuted: '#00cc33',
+		titleBarFrom: '#111111',
+		titleBarTo: '#1a1a1a',
+		titleText: '#00ff41',
+		border: '#00ff4133',
+		cardBg: '#0a0a0a',
+		prompt: '#00ff41',
+		cursor: '#00ff41',
+		bootOk: '#00ff41',
+		bootProgress: '#00cc33',
+	},
+	retro: {
+		name: 'Retro Amber',
+		bg: '#1a1000',
+		text: '#ffb000',
+		textMuted: '#cc8800',
+		titleBarFrom: '#2a1a00',
+		titleBarTo: '#1a1000',
+		titleText: '#ffb000',
+		border: '#ffb00033',
+		cardBg: '#1a1000',
+		prompt: '#ffb000',
+		cursor: '#ffb000',
+		bootOk: '#ffb000',
+		bootProgress: '#ff8800',
+	},
+	dracula: {
+		name: 'Dracula',
+		bg: '#282a36',
+		text: '#f8f8f2',
+		textMuted: '#6272a4',
+		titleBarFrom: '#44475a',
+		titleBarTo: '#282a36',
+		titleText: '#f8f8f2',
+		border: '#6272a4',
+		cardBg: '#282a36',
+		prompt: '#50fa7b',
+		cursor: '#f8f8f2',
+		bootOk: '#50fa7b',
+		bootProgress: '#bd93f9',
+	},
+}
+
 export default function Terminal({ onClose }) {
 	const [input, setInput] = useState('')
 	const [history, setHistory] = useState([])
 	const [bootPhase, setBootPhase] = useState('booting') // 'booting' | 'ready'
 	const [bootLines, setBootLines] = useState([])
 	const [currentBootText, setCurrentBootText] = useState('')
+	const [themeName, setThemeName] = useState('mac')
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
 	const bootEndRef = useRef(null)
@@ -40,6 +105,8 @@ export default function Terminal({ onClose }) {
 	const [windowPos, setWindowPos] = useState({ x: 0, y: 0 })
 	const [isDraggingWindow, setIsDraggingWindow] = useState(false)
 	const dragStartRef = useRef({ x: 0, y: 0 })
+
+	const theme = THEMES[themeName]
 
 	// Lazily get or create a shared AudioContext
 	const getAudioCtx = () => {
@@ -312,10 +379,50 @@ export default function Terminal({ onClose }) {
 			return
 		}
 
+		// Handle theme command
+		if (cleanInput.startsWith('theme')) {
+			const parts = cleanInput.split(/\s+/)
+			const requested = parts[1]
+
+			if (!requested) {
+				// Show available themes
+				output = (
+					<div className="my-2 space-y-1">
+						<div className="font-bold">Available themes:</div>
+						{Object.entries(THEMES).map(([key, t]) => (
+							<div key={key}>
+								<span className="font-bold">{key}</span>
+								{' — '}{t.name}
+								{key === themeName ? ' ✓ (active)' : ''}
+							</div>
+						))}
+						<div className="pt-1" style={{ color: theme.textMuted }}>Usage: theme &lt;name&gt;</div>
+					</div>
+				)
+			} else if (THEMES[requested]) {
+				setThemeName(requested)
+				output = (
+					<div className="my-2">
+						🎨 Theme switched to <span className="font-bold">{THEMES[requested].name}</span>
+					</div>
+				)
+			} else {
+				output = (
+					<div className="my-2">
+						Unknown theme: '{requested}'. Type <span className="font-bold">theme</span> to see available options.
+					</div>
+				)
+			}
+
+			setHistory((prev) => [...prev, { command: trimmedInput, output }])
+			setInput('')
+			return
+		}
+
 		switch (cleanInput) {
 			case 'help':
 				output = (
-					<div className="my-4 text-[#1c1c1c]">
+					<div className="my-4">
 						<pre className="font-mono text-sm leading-tight">
 {`┌─[ PIUSHOS / HELP ]────────┐
 | Command: help             |
@@ -332,6 +439,7 @@ help              | Show available commands
 piushos           | About PiushOS
 works             | Works
 contact           | Contact
+theme             | Change terminal theme
 clear             | Clear terminal`}
 						</pre>
 					</div>
@@ -494,17 +602,18 @@ clear             | Clear terminal`}
 					transition: isDraggingWindow ? 'none' : 'transform 0.15s ease-out',
 				}}
 			>
-				<div className="relative overflow-hidden rounded-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5] crt-flicker"
-					style={{ borderRadius: '8px' }}
+				<div className="relative overflow-hidden rounded-lg shadow-2xl shadow-black/50 crt-flicker"
+					style={{ borderRadius: '8px', borderColor: theme.border, borderWidth: '1px', borderStyle: 'solid', backgroundColor: theme.cardBg, transition: 'background-color 0.4s, border-color 0.4s' }}
 				>
 				
 				{/* Classic Mac OS Title bar — draggable */}
 				<div
-					className={`flex items-center justify-center relative border-b border-[#a0a0a0] bg-gradient-to-b from-[#f8f8f8] to-[#d4d4d4] px-4 py-1.5 select-none ${isDraggingWindow ? 'cursor-grabbing' : 'cursor-grab'}`}
+					className={`flex items-center justify-center relative px-4 py-1.5 select-none ${isDraggingWindow ? 'cursor-grabbing' : 'cursor-grab'}`}
+					style={{ borderBottom: `1px solid ${theme.border}`, background: `linear-gradient(to bottom, ${theme.titleBarFrom}, ${theme.titleBarTo})`, transition: 'background 0.4s, border-color 0.4s', touchAction: 'none' }}
 					onPointerDown={handleTitleBarPointerDown}
 					onPointerMove={handleTitleBarPointerMove}
 					onPointerUp={handleTitleBarPointerUp}
-					style={{ touchAction: 'none' }}
+
 				>
 					<div className="absolute left-4 flex items-center gap-2">
 						{/* Traffic lights */}
@@ -516,7 +625,7 @@ clear             | Clear terminal`}
 						<button className="h-3.5 w-3.5 rounded-full border border-[#d2a32c] bg-[#ffbd2e] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] cursor-default" />
 						<button className="h-3.5 w-3.5 rounded-full border border-[#239c32] bg-[#27c93f] shadow-[inset_0_1px_4px_rgba(255,255,255,0.5)] cursor-default" />
 					</div>
-					<span className="text-[14px] font-semibold text-[#333] tracking-wide pointer-events-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+					<span className="text-[14px] font-semibold tracking-wide pointer-events-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: theme.titleText, transition: 'color 0.4s' }}>
 						PiushOS Terminal
 					</span>
 				</div>
@@ -551,22 +660,22 @@ clear             | Clear terminal`}
 
 					<div 
 						onClick={handleTerminalClick}
-						className="px-6 py-8 font-mono text-[15px] text-[#1c1c1c] overflow-y-auto h-[65vh] cursor-text crt-text-glow"
-						style={{ backgroundColor: '#f8f9fa' }}
+						className="px-6 py-8 font-mono text-[15px] overflow-y-auto h-[65vh] cursor-text crt-text-glow"
+						style={{ backgroundColor: theme.bg, color: theme.text, transition: 'background-color 0.4s, color 0.4s' }}
 					>
 						{bootPhase === 'booting' ? (
-							<div className="space-y-1 text-[13px] text-[#444]">
+							<div className="space-y-1 text-[13px]" style={{ color: theme.textMuted }}>
 								{bootLines.map((line, i) => (
 									<div key={i} className="whitespace-pre">
 										{line.startsWith('[  OK  ]') ? (
 											<>
-												<span className="text-green-700 font-bold">[  OK  ]</span>
+												<span className="font-bold" style={{ color: theme.bootOk }}>[  OK  ]</span>
 												<span>{line.slice(8)}</span>
 											</>
 										) : line.includes('100%') ? (
-											<span className="text-blue-600 font-bold">{line}</span>
+											<span className="font-bold" style={{ color: theme.bootProgress }}>{line}</span>
 										) : line.startsWith('Access') ? (
-											<span className="text-[#1c1c1c] font-bold">{line}</span>
+											<span className="font-bold" style={{ color: theme.text }}>{line}</span>
 										) : (
 											<span>{line}</span>
 										)}
@@ -576,13 +685,13 @@ clear             | Clear terminal`}
 									<div className="whitespace-pre">
 										{currentBootText.startsWith('[  OK  ]') ? (
 											<>
-												<span className="text-green-700 font-bold">[  OK  ]</span>
+												<span className="font-bold" style={{ color: theme.bootOk }}>[  OK  ]</span>
 												<span>{currentBootText.slice(8)}</span>
 											</>
 										) : (
 											<span>{currentBootText}</span>
 										)}
-										<span className="inline-block w-2 h-4 bg-[#1c1c1c] ml-0.5 align-middle" style={{ animation: 'blink 0.6s step-end infinite' }} />
+										<span className="inline-block w-2 h-4 ml-0.5 align-middle" style={{ backgroundColor: theme.cursor, animation: 'blink 0.6s step-end infinite' }} />
 									</div>
 								)}
 								<div ref={bootEndRef} />
