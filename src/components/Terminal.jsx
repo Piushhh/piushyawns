@@ -104,8 +104,8 @@ clear             | Clear terminal`}
 			case 'contact':
 				output = (
 					<div className="my-2">
-						Email: piush@example.com<br/>
-						GitHub: github.com/Piushhh
+						Email: <a href="mailto:[piush02jha@gmail.com]">[Piush's Email]</a><br/>
+						GitHub: <a href="https://github.com/Piushhh">github.com/Piushhh</a>
 					</div>
 				)
 				break
