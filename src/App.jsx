@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Terminal from './components/Terminal'
 import DraggableTerminalButton from './components/DraggableTerminalButton'
 import heroImg from './assets/hero2.jpeg'
-import terminalIcon from './assets/sleek_terminal_icon.png'
+import terminalIcon from './assets/custom_terminal_icon.png'
 
 export default function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
