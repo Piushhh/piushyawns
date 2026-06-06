@@ -83,9 +83,7 @@ COMMAND           | DESCRIPTION
 ───────────────── | ────────────────────────────────────────
 help              | Show available commands
 piushos           | About PiushOS
-bio               | Biography
 works             | Works
-hobbies           | Hobbies
 contact           | Contact
 clear             | Clear terminal`}
 						</pre>
@@ -102,9 +100,6 @@ clear             | Clear terminal`}
 						2. Creative Canvas Animation<br/>
 					</div>
 				)
-				break
-			case 'hobbies':
-				output = <div className="my-2">Coding, Designing, and drinking coffee.</div>
 				break
 			case 'contact':
 				output = (
