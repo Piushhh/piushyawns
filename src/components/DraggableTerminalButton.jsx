@@ -71,15 +71,15 @@ export default function DraggableTerminalButton({ onClick, icon }) {
         transform: `translate(${position.x}px, ${position.y}px)`,
         touchAction: 'none' // Prevent scrolling while dragging on touch devices
       }}
-      className={`absolute bottom-20 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 p-4 shadow-[0_0_15px_rgba(255,255,255,0.3)] backdrop-blur transition-colors hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70 ${
-        isDragging ? 'cursor-grabbing scale-105' : 'cursor-grab hover:scale-105 active:scale-95 duration-200'
+      className={`absolute bottom-20 left-1/2 z-10 -translate-x-1/2 rounded-full p-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70 ${
+        isDragging ? 'cursor-grabbing scale-110 drop-shadow-[0_0_15px_rgba(0,191,255,0.8)]' : 'cursor-grab hover:scale-110 hover:drop-shadow-[0_0_15px_rgba(0,191,255,0.8)] active:scale-95 duration-300'
       }`}
     >
       <img
         src={icon}
         alt=""
         draggable={false} // Prevent default image dragging
-        className="h-20 w-20 object-contain pointer-events-none" // pointer-events-none to let pointer events hit the button instead
+        className="h-24 w-24 object-contain pointer-events-none mix-blend-screen rounded-full" // pointer-events-none to let pointer events hit the button instead
       />
     </button>
   );
