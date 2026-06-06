@@ -79,3 +79,9 @@
     animation: crt-glow 3s ease-in-out infinite;
   }
 }
+
+/* Blinking cursor for boot sequence */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
