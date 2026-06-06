@@ -131,7 +131,7 @@ clear             | Clear terminal`}
 	}
 
 	return (
-		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+		<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
 			<div className="w-full max-w-4xl overflow-hidden rounded-t-lg border border-[#a0a0a0] shadow-2xl shadow-black/50 bg-[#f4f5f5]">
 				
 				{/* Classic Mac OS Title bar */}
