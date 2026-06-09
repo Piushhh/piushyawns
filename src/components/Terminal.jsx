@@ -364,7 +364,7 @@ export default function Terminal({ onClose }) {
 		setIsDraggingWindow(false)
 	}
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault()
 		const trimmedInput = input.trim()
 		const cleanInput = trimmedInput.toLowerCase()
@@ -419,6 +419,53 @@ export default function Terminal({ onClose }) {
 			return
 		}
 
+		// Handle send command
+		if (cleanInput.startsWith('send')) {
+			const message = trimmedInput.slice(4).trim()
+			
+			if (!message) {
+				output = (
+					<div className="my-2">
+						Usage: <span className="font-bold">send &lt;message&gt;</span>
+					</div>
+				)
+				setHistory((prev) => [...prev, { command: trimmedInput, output }])
+			} else {
+				// We can add a temporary loading state
+				setHistory((prev) => [...prev, { command: trimmedInput, output: <div className="my-2 italic text-gray-500">Sending message...</div> }])
+				setInput('')
+				
+				try {
+					const res = await fetch('http://localhost:5000/api/contact', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ message, name: 'Visitor' })
+					})
+					
+					const data = await res.json()
+					
+					setHistory((prev) => {
+						const newHistory = [...prev]
+						// Update the last entry (which is the loading state)
+						if (res.ok) {
+							newHistory[newHistory.length - 1].output = <div className="my-2 text-green-500">{data.message || 'Message sent successfully!'}</div>
+						} else {
+							newHistory[newHistory.length - 1].output = <div className="my-2 text-red-500">Error: {data.error || 'Failed to send message.'}</div>
+						}
+						return newHistory
+					})
+				} catch (err) {
+					setHistory((prev) => {
+						const newHistory = [...prev]
+						newHistory[newHistory.length - 1].output = <div className="my-2 text-red-500">Network error: Could not reach the server. Make sure the backend is running.</div>
+						return newHistory
+					})
+				}
+			}
+			setInput('')
+			return
+		}
+
 		switch (cleanInput) {
 			case 'help':
 				output = (
@@ -426,11 +473,11 @@ export default function Terminal({ onClose }) {
 						<pre className="font-mono text-sm leading-tight">
 {`┌─[ PIUSHOS / HELP ]────────┐
 | Command: help             |
-| Items: 7                  |
+| Items: 8                  |
 └───────────────────────────┘
 
 Command index for PiushOS.
-7 commands available.
+8 commands available.
 ____________________________________________________
 
 COMMAND           | DESCRIPTION
@@ -439,6 +486,7 @@ help              | Show available commands
 piushos           | About PiushOS
 works             | Works
 contact           | Contact
+send <msg>        | Send a direct message to Piush
 theme             | Change terminal theme
 clear             | Clear terminal`}
 						</pre>
