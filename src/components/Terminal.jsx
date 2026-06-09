@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 
+const API_BASE_URL = 'http://localhost:5000'
+
 const RetroMacIcon = () => (
 	<svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
 		<g transform="translate(10, 10)">
@@ -431,12 +433,11 @@ export default function Terminal({ onClose }) {
 				)
 				setHistory((prev) => [...prev, { command: trimmedInput, output }])
 			} else {
-				// We can add a temporary loading state
 				setHistory((prev) => [...prev, { command: trimmedInput, output: <div className="my-2 italic text-gray-500">Sending message...</div> }])
 				setInput('')
 				
 				try {
-					const res = await fetch('http://localhost:5000/api/contact', {
+					const res = await fetch(`${API_BASE_URL}/api/contact`, {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({ message, name: 'Visitor' })
@@ -446,7 +447,6 @@ export default function Terminal({ onClose }) {
 					
 					setHistory((prev) => {
 						const newHistory = [...prev]
-						// Update the last entry (which is the loading state)
 						if (res.ok) {
 							newHistory[newHistory.length - 1].output = <div className="my-2 text-green-500">{data.message || 'Message sent successfully!'}</div>
 						} else {
@@ -457,12 +457,91 @@ export default function Terminal({ onClose }) {
 				} catch (err) {
 					setHistory((prev) => {
 						const newHistory = [...prev]
-						newHistory[newHistory.length - 1].output = <div className="my-2 text-red-500">Network error: Could not reach the server. Make sure the backend is running.</div>
+						newHistory[newHistory.length - 1].output = <div className="my-2 text-red-500">Network error: Could not reach the server.</div>
 						return newHistory
 					})
 				}
 			}
 			setInput('')
+			return
+		}
+
+		// Handle blog command
+		if (cleanInput === 'blog' || cleanInput.startsWith('blog ')) {
+			const slug = trimmedInput.slice(4).trim()
+			
+			setHistory((prev) => [...prev, { command: trimmedInput, output: <div className="my-2 italic text-gray-500">Fetching...</div> }])
+			setInput('')
+			
+			try {
+				if (!slug) {
+					// List all blogs
+					const res = await fetch(`${API_BASE_URL}/api/blogs`)
+					const blogs = await res.json()
+					
+					if (!res.ok) throw new Error(blogs.error)
+					
+					const blogOutput = blogs.length === 0 ? (
+						<div className="my-2">No blog posts yet. Check back soon!</div>
+					) : (
+						<div className="my-3">
+							<pre className="font-mono text-sm leading-tight">
+{`┌─[ PIUSHOS / BLOG ]────────┐
+| Posts: ${String(blogs.length).padEnd(19)}|
+└───────────────────────────┘\n`}
+							</pre>
+							<div className="space-y-2 mt-2">
+								{blogs.map((b, i) => (
+									<div key={b._id}>
+										<span className="font-bold">{i + 1}.</span>{' '}
+										<span className="font-bold">{b.title}</span>
+										<span className="text-gray-500 ml-2">[{b.tags?.join(', ')}]</span>
+										<div className="text-gray-500 text-xs ml-4">→ blog {b.slug}</div>
+									</div>
+								))}
+							</div>
+							<div className="mt-3 text-gray-500 text-xs">Type blog &lt;slug&gt; to read a post.</div>
+						</div>
+					)
+					
+					setHistory((prev) => {
+						const h = [...prev]
+						h[h.length - 1].output = blogOutput
+						return h
+					})
+				} else {
+					// Fetch single blog by slug
+					const res = await fetch(`${API_BASE_URL}/api/blogs/${slug}`)
+					const blog = await res.json()
+					
+					if (!res.ok) {
+						setHistory((prev) => {
+							const h = [...prev]
+							h[h.length - 1].output = <div className="my-2 text-red-500">Blog post not found: '{slug}'. Type <span className="font-bold">blog</span> to see available posts.</div>
+							return h
+						})
+					} else {
+						const postOutput = (
+							<div className="my-3">
+								<div className="font-bold text-lg mb-1">{blog.title}</div>
+								<div className="text-gray-500 text-xs mb-3">[{blog.tags?.join(', ')}] — {new Date(blog.createdAt).toLocaleDateString()}</div>
+								<div className="whitespace-pre-wrap leading-relaxed">{blog.content}</div>
+							</div>
+						)
+						setHistory((prev) => {
+							const h = [...prev]
+							h[h.length - 1].output = postOutput
+							return h
+						})
+					}
+				}
+			} catch (err) {
+				setHistory((prev) => {
+					const h = [...prev]
+					h[h.length - 1].output = <div className="my-2 text-red-500">Network error: Could not reach the server.</div>
+					return h
+				})
+			}
 			return
 		}
 
@@ -473,18 +552,19 @@ export default function Terminal({ onClose }) {
 						<pre className="font-mono text-sm leading-tight">
 {`┌─[ PIUSHOS / HELP ]────────┐
 | Command: help             |
-| Items: 8                  |
+| Items: 9                  |
 └───────────────────────────┘
 
 Command index for PiushOS.
-8 commands available.
+9 commands available.
 ____________________________________________________
 
 COMMAND           | DESCRIPTION
 ───────────────── | ────────────────────────────────────────
 help              | Show available commands
 piushos           | About PiushOS
-works             | Works
+works             | Projects & works
+blog              | Read blog posts
 contact           | Contact
 send <msg>        | Send a direct message to Piush
 theme             | Change terminal theme
@@ -496,13 +576,59 @@ clear             | Clear terminal`}
 			case 'piushos':
 				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He is keenly interested in Blockchain, Backend Development and Modern UI design.</div>
 				break
-			case 'works':
-				output = (
-					<div className="my-2">
-						"CollegeSpace" coming soon...
-					</div>
-				)
-				break
+			case 'works': {
+				// Fetch projects from API
+				setHistory((prev) => [...prev, { command: trimmedInput, output: <div className="my-2 italic text-gray-500">Loading projects...</div> }])
+				setInput('')
+				
+				try {
+					const res = await fetch(`${API_BASE_URL}/api/projects`)
+					const projects = await res.json()
+					
+					if (!res.ok) throw new Error(projects.error)
+					
+					const statusIcon = { live: '🟢', wip: '🟡', 'coming-soon': '🔵' }
+					const statusLabel = { live: 'LIVE', wip: 'WIP', 'coming-soon': 'SOON' }
+					
+					const worksOutput = projects.length === 0 ? (
+						<div className="my-2">No projects yet. Check back soon!</div>
+					) : (
+						<div className="my-3">
+							<pre className="font-mono text-sm leading-tight">
+{`┌─[ PIUSHOS / WORKS ]───────┐
+| Projects: ${String(projects.length).padEnd(16)}|
+└───────────────────────────┘`}
+							</pre>
+							<div className="space-y-3 mt-3">
+								{projects.map((p, i) => (
+									<div key={p._id} className="border-l-2 border-gray-600 pl-3">
+										<div className="font-bold">
+											{statusIcon[p.status] || '⚪'} {p.title}
+											<span className="text-xs text-gray-500 ml-2">[{statusLabel[p.status] || p.status}]</span>
+										</div>
+										<div className="text-sm mt-0.5">{p.description}</div>
+										<div className="text-xs text-gray-500 mt-0.5">Tech: {p.tech?.join(' · ')}</div>
+										{p.link && <div className="text-xs mt-0.5">🔗 <a href={p.link} target="_blank" rel="noopener noreferrer" className="underline">{p.link}</a></div>}
+									</div>
+								))}
+							</div>
+						</div>
+					)
+					
+					setHistory((prev) => {
+						const h = [...prev]
+						h[h.length - 1].output = worksOutput
+						return h
+					})
+				} catch (err) {
+					setHistory((prev) => {
+						const h = [...prev]
+						h[h.length - 1].output = <div className="my-2 text-red-500">Could not load projects. Backend may be offline.</div>
+						return h
+					})
+				}
+				return
+			}
 			case 'contact':
 				output = (
 					<div className="my-2">
