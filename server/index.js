@@ -2,8 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
+import connectDB from './config/db.js';
+import projectRoutes from './routes/projects.js';
+import blogRoutes from './routes/blogs.js';
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +55,10 @@ app.post('/api/contact', async (req, res) => {
     res.status(500).json({ error: 'Failed to send message. Please try again later.' });
   }
 });
+
+// API routes
+app.use('/api/projects', projectRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Start the server
 app.listen(PORT, () => {
