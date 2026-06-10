@@ -94,13 +94,9 @@ const THEMES = {
 export default function Terminal({ onClose }) {
 	const [input, setInput] = useState('')
 	const [history, setHistory] = useState([])
-	const [bootPhase, setBootPhase] = useState('booting') // 'booting' | 'ready'
-	const [bootLines, setBootLines] = useState([])
-	const [currentBootText, setCurrentBootText] = useState('')
 	const [themeName, setThemeName] = useState('mac')
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
-	const bootEndRef = useRef(null)
 	const audioCtxRef = useRef(null)
 
 	// Drag state for the window
@@ -122,136 +118,15 @@ export default function Terminal({ onClose }) {
 		return audioCtxRef.current
 	}
 
-	const BOOT_SEQUENCE = [
-		{ text: 'PiushOS v2.1.0 — Starting...', delay: 100 },
-		{ text: '[  OK  ] Establishing secure session...', delay: 140 },
-		{ text: '[  OK  ] All services started.', delay: 200 },
-		{ text: '', delay: 100 },
-		{ text: '████████████████████████████████ 100%', delay: 300 },
-		{ text: '', delay: 100 },
-		{ text: 'Access granted. Welcome, visitor.', delay: 400 },
-	]
-
-	// Play a short retro beep
-	const playBootBeep = (freq = 600, duration = 0.04) => {
-		try {
-			const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-			const osc = audioCtx.createOscillator()
-			const gain = audioCtx.createGain()
-			osc.connect(gain)
-			gain.connect(audioCtx.destination)
-			osc.type = 'square'
-			osc.frequency.setValueAtTime(freq, audioCtx.currentTime)
-			gain.gain.setValueAtTime(0.03, audioCtx.currentTime)
-			gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration)
-			osc.start(audioCtx.currentTime)
-			osc.stop(audioCtx.currentTime + duration)
-		} catch { /* audio not available */ }
-	}
-
-	// Play a success chime (two ascending notes)
-	const playBootComplete = () => {
-		try {
-			const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-			const playNote = (freq, startTime, dur) => {
-				const osc = audioCtx.createOscillator()
-				const gain = audioCtx.createGain()
-				osc.connect(gain)
-				gain.connect(audioCtx.destination)
-				osc.type = 'sine'
-				osc.frequency.setValueAtTime(freq, startTime)
-				gain.gain.setValueAtTime(0.06, startTime)
-				gain.gain.exponentialRampToValueAtTime(0.00001, startTime + dur)
-				osc.start(startTime)
-				osc.stop(startTime + dur)
-			}
-			playNote(523, audioCtx.currentTime, 0.12)        // C5
-			playNote(659, audioCtx.currentTime + 0.12, 0.15) // E5
-			playNote(784, audioCtx.currentTime + 0.24, 0.2)  // G5
-		} catch { /* audio not available */ }
-	}
-
-	// Typewriter effect for each boot line
-	const typeText = (text) => {
-		return new Promise((resolve) => {
-			if (!text) {
-				setCurrentBootText('')
-				resolve()
-				return
-			}
-			let i = 0
-			const interval = setInterval(() => {
-				setCurrentBootText(text.slice(0, i + 1))
-				i++
-				if (i >= text.length) {
-					clearInterval(interval)
-					resolve()
-				}
-			}, 12) // typing speed: 12ms per character
-		})
-	}
-
-	// Run the boot sequence
+	// Focus the input on mount
 	useEffect(() => {
-		let cancelled = false
-
-		const runBoot = async () => {
-			for (let i = 0; i < BOOT_SEQUENCE.length; i++) {
-				if (cancelled) return
-				const line = BOOT_SEQUENCE[i]
-
-				// Type out the line
-				await typeText(line.text)
-
-				if (cancelled) return
-
-				// Play a soft beep for OK lines
-				if (line.text.includes('[  OK  ]')) {
-					playBootBeep(500 + Math.random() * 200)
-				}
-
-				// Commit the typed line to the boot log
-				if (line.text) {
-					setBootLines((prev) => [...prev, line.text])
-				}
-				setCurrentBootText('')
-
-				// Wait before next line
-				await new Promise((r) => setTimeout(r, line.delay))
-			}
-
-			if (!cancelled) {
-				playBootComplete()
-				// Short pause then show terminal
-				await new Promise((r) => setTimeout(r, 600))
-				if (!cancelled) {
-					setBootPhase('ready')
-				}
-			}
-		}
-
-		runBoot()
-		return () => { cancelled = true }
+		inputRef.current?.focus()
 	}, [])
-
-	// Focus the input when boot completes
-	useEffect(() => {
-		if (bootPhase === 'ready') {
-			inputRef.current?.focus()
-		}
-	}, [bootPhase])
 
 	// Keep terminal scrolled to the bottom as history grows
 	useEffect(() => {
-		if (bootPhase === 'ready') {
-			terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-		}
-	}, [history, bootPhase])
-
-	// Keep boot log scrolled to bottom during boot
-	useEffect(() => {
-		bootEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-	}, [bootLines, currentBootText])
+		terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+	}, [history])
 
 	// Mechanical keyboard click sound
 	const playKeyClick = () => {
@@ -837,40 +712,6 @@ clear             | Clear terminal`}
 						className="px-6 py-8 font-mono text-[15px] overflow-y-auto h-[65vh] cursor-text crt-text-glow"
 						style={{ backgroundColor: theme.bg, color: theme.text, transition: 'background-color 0.4s, color 0.4s' }}
 					>
-						{bootPhase === 'booting' ? (
-							<div className="space-y-1 text-[13px]" style={{ color: theme.textMuted }}>
-								{bootLines.map((line, i) => (
-									<div key={i} className="whitespace-pre">
-										{line.startsWith('[  OK  ]') ? (
-											<>
-												<span className="font-bold" style={{ color: theme.bootOk }}>[  OK  ]</span>
-												<span>{line.slice(8)}</span>
-											</>
-										) : line.includes('100%') ? (
-											<span className="font-bold" style={{ color: theme.bootProgress }}>{line}</span>
-										) : line.startsWith('Access') ? (
-											<span className="font-bold" style={{ color: theme.text }}>{line}</span>
-										) : (
-											<span>{line}</span>
-										)}
-									</div>
-								))}
-								{currentBootText && (
-									<div className="whitespace-pre">
-										{currentBootText.startsWith('[  OK  ]') ? (
-											<>
-												<span className="font-bold" style={{ color: theme.bootOk }}>[  OK  ]</span>
-												<span>{currentBootText.slice(8)}</span>
-											</>
-										) : (
-											<span>{currentBootText}</span>
-										)}
-										<span className="inline-block w-2 h-4 ml-0.5 align-middle" style={{ backgroundColor: theme.cursor, animation: 'blink 0.6s step-end infinite' }} />
-									</div>
-								)}
-								<div ref={bootEndRef} />
-							</div>
-						) : (
 							<div className="animate-fade-in max-w-3xl">
 								
 								{/* Header */}
@@ -914,7 +755,6 @@ clear             | Clear terminal`}
 								</form>
 								<div ref={terminalEndRef} className="h-4" />
 							</div>
-						)}
 					</div>
 				</div>
 				</div>
