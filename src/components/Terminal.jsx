@@ -95,6 +95,9 @@ export default function Terminal({ onClose }) {
 	const [input, setInput] = useState('')
 	const [history, setHistory] = useState([])
 	const [themeName, setThemeName] = useState('mac')
+	const [welcomeLines, setWelcomeLines] = useState([])
+	const [currentLineText, setCurrentLineText] = useState('')
+	const [showPrompt, setShowPrompt] = useState(false)
 	const inputRef = useRef(null)
 	const terminalEndRef = useRef(null)
 	const audioCtxRef = useRef(null)
@@ -118,10 +121,44 @@ export default function Terminal({ onClose }) {
 		return audioCtxRef.current
 	}
 
-	// Focus the input on mount
+	const WELCOME_LINES = [
+		"Welcome to PiushOS terminal.",
+		"Type 'help' to start."
+	]
+
 	useEffect(() => {
-		inputRef.current?.focus()
+		let cancelled = false
+		const typeLines = async () => {
+			await new Promise(r => setTimeout(r, 300)) // initial delay
+			for (let i = 0; i < WELCOME_LINES.length; i++) {
+				if (cancelled) return
+				const line = WELCOME_LINES[i]
+				
+				for (let j = 0; j <= line.length; j++) {
+					if (cancelled) return
+					setCurrentLineText(line.slice(0, j))
+					await new Promise(r => setTimeout(r, 20)) // typing speed
+				}
+				
+				if (cancelled) return
+				setWelcomeLines(prev => [...prev, line])
+				setCurrentLineText('')
+				await new Promise(r => setTimeout(r, 150)) // delay between lines
+			}
+			if (!cancelled) {
+				setShowPrompt(true)
+			}
+		}
+		typeLines()
+		return () => { cancelled = true }
 	}, [])
+
+	// Focus the input when prompt appears
+	useEffect(() => {
+		if (showPrompt) {
+			inputRef.current?.focus()
+		}
+	}, [showPrompt])
 
 	// Keep terminal scrolled to the bottom as history grows
 	useEffect(() => {
@@ -719,41 +756,53 @@ clear             | Clear terminal`}
 								<div className="border-b border-[#1c1c1c] pb-1 mb-4 inline-block pr-10">
 									<h1 className="font-bold text-xl">PiushOS Terminal</h1>
 								</div>
-								<div className="space-y-3 mb-6">
-									<p>Welcome to PiushOS terminal.</p>
-									<p>Type 'help' to start.</p>
-								</div>
-
-								{/* Command history */}
-								<div className="space-y-4">
-									{history.map((entry, idx) => (
-										<div key={idx} className="space-y-1">
-											<p>
-												$ {entry.command}
-											</p>
-											<div>{entry.output}</div>
-										</div>
+								
+								<div className="space-y-1 mb-6">
+									{welcomeLines.map((line, idx) => (
+										<p key={idx}>{line}</p>
 									))}
+									{!showPrompt && (
+										<p>
+											{currentLineText}
+											<span className="inline-block w-2 h-4 ml-0.5 align-middle" style={{ backgroundColor: theme.cursor, animation: 'blink 0.6s step-end infinite' }} />
+										</p>
+									)}
 								</div>
 
-								{/* Current Input prompt */}
-								<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-4">
-									<span className="shrink-0">$</span>
-									<div className="relative flex-grow flex items-center">
-										<input
-											ref={inputRef}
-											type="text"
-											value={input}
-											onChange={handleInputChange}
-											onKeyDown={handleKeyDown}
-											className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
-											aria-label="Terminal input"
-											spellCheck="false"
-											autoComplete="off"
-										/>
-									</div>
-								</form>
-								<div ref={terminalEndRef} className="h-4" />
+								{showPrompt && (
+									<>
+										{/* Command history */}
+										<div className="space-y-4">
+											{history.map((entry, idx) => (
+												<div key={idx} className="space-y-1">
+													<p>
+														$ {entry.command}
+													</p>
+													<div>{entry.output}</div>
+												</div>
+											))}
+										</div>
+
+										{/* Current Input prompt */}
+										<form onSubmit={handleSubmit} className="flex items-center gap-2 pt-4">
+											<span className="shrink-0">$</span>
+											<div className="relative flex-grow flex items-center">
+												<input
+													ref={inputRef}
+													type="text"
+													value={input}
+													onChange={handleInputChange}
+													onKeyDown={handleKeyDown}
+													className="w-full bg-transparent text-[#1c1c1c] focus:outline-none border-none p-0 font-mono select-text"
+													aria-label="Terminal input"
+													spellCheck="false"
+													autoComplete="off"
+												/>
+											</div>
+										</form>
+										<div ref={terminalEndRef} className="h-4" />
+									</>
+								)}
 							</div>
 					</div>
 				</div>
