@@ -3,7 +3,7 @@ import Terminal from './components/Terminal'
 import DraggableTerminalButton from './components/DraggableTerminalButton'
 import InteractiveBackground from './components/InteractiveBackground'
 import heroImg from './assets/hero2.jpeg'
-import terminalIcon from './assets/custom_terminal_icon.png'
+import terminalIcon from './assets/terminalicon.svg'
 
 export default function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
