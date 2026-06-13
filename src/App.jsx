@@ -9,7 +9,7 @@ export default function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-black">
+    <main className="relative h-screen w-screen overflow-hidden" style={{ background: 'rgb(2, 3, 12)' }}>
       
       {/* Static Background Image */}
       <section className="absolute inset-0 z-0 h-full w-full">
