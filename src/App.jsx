@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Terminal from './components/Terminal'
 import DraggableTerminalButton from './components/DraggableTerminalButton'
-import InteractiveBackground from './components/InteractiveBackground'
 import heroImg from './assets/hero2.jpeg'
 import terminalIcon from './assets/terminalicon.svg'
 
@@ -16,8 +15,6 @@ export default function App() {
         <img src={heroImg} alt="Background" className="h-full w-full object-cover" />
       </section>
 
-      {/* Interactive Particle Canvas */}
-      <InteractiveBackground />
 
       {/* Floating Draggable Action Button to toggle Terminal */}
       {!isTerminalOpen && (
