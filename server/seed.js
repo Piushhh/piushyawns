@@ -20,13 +20,6 @@ const seedProjects = [
     link: 'https://github.com/Piushhh/piushyawns',
     status: 'live',
   },
-  {
-    title: 'BlockChain Explorer',
-    description: 'A lightweight blockchain explorer to visualize transactions and blocks on a custom test chain.',
-    tech: ['Solidity', 'Ethers.js', 'React', 'Hardhat'],
-    link: '',
-    status: 'coming-soon',
-  },
 ];
 
 const seedBlogs = [
@@ -37,13 +30,7 @@ const seedBlogs = [
     tags: ['portfolio', 'web-dev', 'design'],
     published: true,
   },
-  {
-    title: 'Getting Started with Blockchain Development',
-    slug: 'getting-started-blockchain',
-    content: `Blockchain development can seem intimidating at first, but it's more accessible than you think.\n\nHere's my recommended path:\n\n1. Learn Solidity basics — start with simple smart contracts\n2. Set up a local development environment with Hardhat\n3. Write your first ERC-20 token contract\n4. Deploy to a testnet (Sepolia is great for beginners)\n5. Build a frontend that interacts with your contract using Ethers.js\n\nThe key is to build small projects and iterate. Don't try to build the next DeFi protocol on day one.\n\nResources I recommend:\n- Solidity by Example (solidity-by-example.org)\n- Patrick Collins' YouTube course\n- Hardhat documentation\n\nHappy building!`,
-    tags: ['blockchain', 'solidity', 'web3'],
-    published: true,
-  },
+  
   {
     title: 'My Full-Stack Tech Stack in 2025',
     slug: 'fullstack-techstack-2025',
