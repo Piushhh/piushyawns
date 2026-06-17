@@ -478,7 +478,7 @@ piushos           | About PiushOS
 works             | Projects & works
 blog              | Read blog posts
 contact           | Contact
-send <msg>        | Send a direct message to Piush
+send <msg>        | Directly message Piush
 theme             | Change terminal theme
 clear             | Clear terminal`}
 						</pre>
