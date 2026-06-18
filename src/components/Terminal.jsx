@@ -480,7 +480,7 @@ blog              | Read blog posts
 contact           | Contact
 send <msg>        | Directly message Piush
 theme             | Change terminal theme
-clear             | Clear terminal`}
+clear             | Clear the terminal`}
 						</pre>
 					</div>
 				)
