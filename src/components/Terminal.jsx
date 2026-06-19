@@ -503,7 +503,7 @@ clear             | Clear the terminal`}
 					const statusLabel = { live: 'LIVE', wip: 'WIP', 'coming-soon': 'SOON' }
 					
 					const worksOutput = projects.length === 0 ? (
-						<div className="my-2">No projects yet. Check back soon!</div>
+						<div className="my-2">Projects under development. Check back soon!</div>
 					) : (
 						<div className="my-3">
 							<pre className="font-mono text-sm leading-tight">
