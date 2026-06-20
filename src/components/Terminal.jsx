@@ -582,7 +582,7 @@ clear             | Clear the terminal`}
 					<div className="my-2">
 						<pre className="font-mono text-sm leading-tight">
 {`┌─────────────────────────────────┐
-│  ERROR: gui module not found    │
+│  ERROR: gui module was not found    │
 │                                 │
 │  Real developers use the CLI.   │
 │  This is the way. ⌨️            │
