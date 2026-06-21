@@ -630,7 +630,7 @@ clear             | Clear the terminal`}
 
   Brewing coffee... ☕
   [██████████████] 100%
-  Here you go! Cream or sugar?`}
+  Here you go! Cream or sugar??`}
 					</div>
 				)
 				break
