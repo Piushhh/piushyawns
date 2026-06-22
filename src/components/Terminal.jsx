@@ -555,7 +555,7 @@ clear             | Clear the terminal`}
 			case 'sudo':
 				output = (
 					<div className="my-2">
-						<span className="text-red-600 font-bold">[sudo]</span> piush is not in the sudoers file. This incident will be reported. 🚨
+						<span className="text-red-600 font-bold">[sudo]</span> piush is not in the sudoers file. This incident will be reported immediately. 🚨
 					</div>
 				)
 				break
