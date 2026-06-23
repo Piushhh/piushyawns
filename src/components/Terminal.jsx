@@ -486,7 +486,7 @@ clear             | Clear the terminal`}
 				)
 				break
 			case 'piushos':
-				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He is keenly interested in Blockchain, Backend Development and Modern UI design.</div>
+				output = <div className="my-2">Piush is a pre-grad student currently working on full-stack systems. He is keenly interested in Blockchain, backend Development and Modern UI design.</div>
 				break
 			case 'works': {
 				// Fetch projects from API
